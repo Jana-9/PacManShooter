@@ -150,27 +150,22 @@ public class GamePlayState {
         }
     }
 
-    public static void addEnemy() {
-
-        switch (new Random().nextInt(4)) {
-
-            case 0:
-                enemyList.add(new Enemy(enemyPositionX.nextInt(Window.WIDTH), -90));
-                break;
-
-            case 1:
-                enemyList.add(new Enemy(enemyPositionX.nextInt(Window.WIDTH), Window.HEIGHT + 90));
-                break;
-
-            case 2:
-                enemyList.add(new Enemy(-90, enemyPositionY.nextInt(Window.HEIGHT)));
-                break;
-
-            case 3:
-                enemyList.add(new Enemy(Window.WIDTH + 90, enemyPositionY.nextInt(Window.HEIGHT)));
-                break;
-        }
+   public static void addEnemy() {
+    switch (new Random().nextInt(4)) {
+        case 0:
+            enemyList.add(EnemyFactory.createEnemy(enemyPositionX.nextInt(Window.WIDTH), -90));
+            break;
+        case 1:
+            enemyList.add(EnemyFactory.createEnemy(enemyPositionX.nextInt(Window.WIDTH), Window.HEIGHT + 90));
+            break;
+        case 2:
+            enemyList.add(EnemyFactory.createEnemy(-90, enemyPositionY.nextInt(Window.HEIGHT)));
+            break;
+        case 3:
+            enemyList.add(EnemyFactory.createEnemy(Window.WIDTH + 90, enemyPositionY.nextInt(Window.HEIGHT)));
+            break;
     }
+}
 
     public static void gameOver(Input input) {
 
