@@ -201,10 +201,10 @@ public class MultiplayerGamePlayState {
         }
     }
 
-    public static void addEnemy(int x, int y, int imageIndex, int playerToFollow) {
+ public static void addEnemy(int x, int y, int imageIndex, int playerToFollow) {
+    enemyList.add(EnemyFactory.createEnemy(x, y, imageIndex, playerToFollow));
+}
 
-        enemyList.add(new Enemy(x, y, imageIndex, playerToFollow));
-    }
 
     public static void getOpponentCoordinates() {
 
