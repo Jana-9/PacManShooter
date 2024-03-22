@@ -7,28 +7,32 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Rappresenta l'oggetto che si occupa di gestire il punteggio durante una partita e i punteggi migliori.
- * @author carloblasi
+ * Represents the object responsible for managing scores during a game and storing high scores.
+ * Uses the Singleton design pattern.
  */
 public class ScoreManager implements Serializable {
 
+    //private static final long serialVersionUID = 1L;
+    private static ScoreManager instance = null;
+    
     private int score = 0;
     private int[] scores = {0, 0, 0, 0, 0};
     private int[] multiplayerScores = {0, 0, 0, 0, 0};
-
-    /**
-     * I due array di stringhe di punteggi sono pubblici perché vengono usati dalla classe LeaderboardState per essere scritti su schermo
-     */
     public String[] scoreStrings;
     public String[] multiplayerScoreStrings;
 
-    /**
-     * Inizializza lo ScoreManager.
-     */
-    public ScoreManager() {
-
+    // Private constructor to prevent direct instantiation
+    private ScoreManager() {
         this.scoreStrings = new String[this.scores.length];
         this.multiplayerScoreStrings = new String[this.multiplayerScores.length];
+    }
+
+    // Static method to get the singleton instance of ScoreManager
+    public static ScoreManager getInstance() {
+        if (instance == null) {
+            instance = new ScoreManager();
+        }
+        return instance;
     }
 
     /**
@@ -169,4 +173,4 @@ public class ScoreManager implements Serializable {
             System.out.println("ERROR WHILE SAVING SCORES");
         }
     }
-}
+}  
