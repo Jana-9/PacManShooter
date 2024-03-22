@@ -162,7 +162,7 @@ public class Game extends BasicGame {
         DestinationPortFont = new GameFont(44f);
         SourcePortFont = new GameFont(44f);
 
-        Score = new ScoreManager();
+        Score =ScoreManager.getInstance();
         Score.resetScore();
 
         IPTextField = new TextField(gc, IPFont.getFont(), Window.HALF_WIDTH - 180, Window.HALF_HEIGHT - 200, IPFont.getStringWidth("555555555555555"), 54);
