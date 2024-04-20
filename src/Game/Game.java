@@ -31,7 +31,7 @@ public class Game extends BasicGame {
     static Input input;
     public static int mouseX, mouseY;
     static final int MENUSTATE = 0, GAMEPLAYSTATE = 1, MULTIPLAYERMENUSTATE = 2, MULTIPLAYERGAMEPLAYSTATE = 3,
-                    MULTIPLAYERGAMEOVERSTATE = 4, LEADERBOARDSTATE = 5, PAUSESTATE = 6, GAMEOVERSTATE = 7;
+                    MULTIPLAYERGAMEOVERSTATE = 4, LEADERBOARDSTATE = 5, PAUSESTATE = 6, GAMEOVERSTATE = 7, MENUPACMAN = 8;
     static int state = MENUSTATE;
     static boolean canCreateConnection = true;
     static boolean paused = false;
@@ -45,6 +45,9 @@ public class Game extends BasicGame {
     public static Button retryButton;
     public static Button serverButton;
     public static Button showMultiplayerScoresButton;
+    static  Button pacManButton;
+    static  Button msPacManButton ;
+    static  Button menuCharacterTitle;
 
     static GameFont bigFont;
     static GameFont playFont;
@@ -54,6 +57,8 @@ public class Game extends BasicGame {
     static GameFont multiplayerFont;
     static GameFont smallFont;
     static Image titleImage;
+    static Image pacManIcon ;
+    static Image msPacManIcon ;
     static Image youLostImage;
     static Image[] ghosts = new Image[4];
     static ScoreManager Score;
@@ -161,6 +166,7 @@ public class Game extends BasicGame {
         IPFont = new GameFont(54f);
         DestinationPortFont = new GameFont(44f);
         SourcePortFont = new GameFont(44f);
+        
 
         Score =ScoreManager.getInstance();
         Score.resetScore();
@@ -189,8 +195,13 @@ public class Game extends BasicGame {
         retryButton = new Button("RETRY (R)", Window.HALF_WIDTH, Window.HALF_HEIGHT, 64, optionBlue);
         serverButton = new Button("SERVER", Window.HALF_WIDTH, Window.HALF_HEIGHT + 40, 32, Color.red);
         showMultiplayerScoresButton = new Button("SHOW MULTIPLAYER HIGHSCORES", Window.HALF_WIDTH, quitButton.getY() -  Window.HEIGHT/16, 24, Color.white);
+        
+        menuCharacterTitle = new Button("CHOOSE THE CHARACTER", Window.HALF_WIDTH, Window.HALF_HEIGHT+-200, 64, Color.yellow);
+        pacManButton = new Button("PacMan",  Window.HALF_WIDTH+ -300, Window.HALF_HEIGHT + 200, 44, optionBlue);
+        msPacManButton = new Button("Ms.PacMan", Window.HALF_WIDTH+ 250, Window.HALF_HEIGHT + 200, 44, optionBlue);
 
-        player = new Player();
+
+       // player = new Player();
         opponent = new Opponent();
 
         for (int i = 0; i < 10; i++)
@@ -198,6 +209,8 @@ public class Game extends BasicGame {
 
         try {
             titleImage = new Image("Images/Title.png");
+            pacManIcon = new Image("Images/Pac Man_1.png");
+            msPacManIcon = new Image("Images/Ms. Pac Man_1.png");
             youLostImage = new Image("Images/GameLost.png");
             ghosts[0] = new Image("Images/Clyde.png");
             ghosts[1] = new Image("Images/Blinky.png");
@@ -228,6 +241,7 @@ public class Game extends BasicGame {
      */
     @Override
     public void update(GameContainer gc, int delta) throws SlickException {
+        GameState gamePlayState=new GamePlayState();
 
         input = gc.getInput();
         mouseX = input.getMouseX();
@@ -242,7 +256,7 @@ public class Game extends BasicGame {
 
             case GAMEPLAYSTATE:
 
-                GamePlayState.update(gc, input, delta, mouseX, mouseY);
+                gamePlayState.update(gc, input, delta, mouseX, mouseY);
                 break;
 
             case MULTIPLAYERMENUSTATE:
@@ -275,6 +289,10 @@ public class Game extends BasicGame {
 
                 GameOverState.update(gc, input, delta, mouseX, mouseY);
                 break;
+                
+             case MENUPACMAN:
+                MenuCharacter.update( gc, input,  delta,  mouseX,  mouseY);
+                break;
         }
     }
 
@@ -286,7 +304,9 @@ public class Game extends BasicGame {
      */
     @Override
     public void render(GameContainer gc, Graphics g) throws SlickException {
+       GameState gamePlayState=new GamePlayState();
 
+          GameState decoratedGameState = new ScoreDecorator(gamePlayState);
         switch (state) {
 
             case MENUSTATE:
@@ -295,8 +315,8 @@ public class Game extends BasicGame {
                 break;
 
             case GAMEPLAYSTATE:
-
-                GamePlayState.render(gc, g);
+             
+               decoratedGameState.render(gc, g);
                 break;
 
             case MULTIPLAYERMENUSTATE:
@@ -328,6 +348,11 @@ public class Game extends BasicGame {
 
                 GameOverState.render(gc, g);
                 break;
+                
+            case MENUPACMAN:
+                MenuCharacter.render( gc, g);
+                break;
+                
         }
     }
 
