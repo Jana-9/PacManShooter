@@ -20,6 +20,7 @@ import static Game.Game.increaseDifficulty;
 import static Game.Game.paused;
 import static Game.Game.player;
 import static Game.Game.smallFont;
+import java.awt.Font;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
@@ -28,8 +29,14 @@ import org.newdawn.slick.Input;
 import java.util.Iterator;
 import java.util.Random;
 import org.newdawn.slick.Sound;
+import org.newdawn.slick.TrueTypeFont;
 
-public class GamePlayState {
+ interface GameState {
+    void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException;
+    void render(GameContainer gc, Graphics g) throws SlickException;
+}
+
+public class GamePlayState implements GameState {
 
     /**
      * Metodo generico per aggiornare la logica degli oggetti della scena
@@ -40,7 +47,8 @@ public class GamePlayState {
      * @param mouseY Coordinata Y del mouse
      * @throws SlickException
      */
-    public static void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException {
+      @Override
+    public void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException {
 
         startDelay -= delta;
         if (startDelay < 0) {
@@ -103,8 +111,8 @@ public class GamePlayState {
             }
         }
     }
-
-    public static void render(GameContainer gc, Graphics g) throws SlickException {
+  @Override
+    public void render(GameContainer gc, Graphics g) throws SlickException {
 
         Iterator<Bullet> iter = bulletList.iterator();
         while (iter.hasNext()) {
@@ -183,4 +191,51 @@ public class GamePlayState {
         Score.resetScore();
         Game.state = Game.GAMEOVERSTATE;
     }
+}
+
+ abstract class GameStateDecorator implements GameState {
+    protected GameState decoratedObject;
+
+    public GameStateDecorator(GameState decoratedObject) {
+        this.decoratedObject = decoratedObject;
+    }
+
+    @Override
+    public void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException {
+        decoratedObject.update(gc, input, delta, mouseX, mouseY);
+    }
+
+    @Override
+    public void render(GameContainer gc, Graphics g) throws SlickException {
+        decoratedObject.render(gc, g);
+    }
+}
+
+  class ScoreDecorator extends GameStateDecorator {
+    public ScoreDecorator(GameState decoratedObject) {
+        super(decoratedObject);
+    }
+ @Override
+    public void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException {
+       
+        decoratedObject.update(gc, input, delta, mouseX, mouseY);
+    }
+    @Override
+    public void render(GameContainer gc, Graphics g) throws SlickException {
+   
+        renderScore(g);
+        
+        // Call the render method of the decorated object
+        decoratedObject.render(gc, g);
+       
+    }
+
+    private void renderScore(Graphics g) {
+        // Render score logic
+          g.setColor(Color.green);
+       g.setFont(new TrueTypeFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 30), true)); // Adjust font size as needed
+        g.drawString("Score: " + Score.getScore(), 20, 20); // Adjust position as needed
+    }
+    
+    
 }
