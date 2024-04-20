@@ -31,7 +31,7 @@ public class MenuState {
 
                 Window.clear(input);
                 Game.openingSound.play();
-                Game.state = Game.GAMEPLAYSTATE;
+                Game.state = Game.MENUPACMAN;
             }
             if (multiplayerButton.isPressed()) {
 
@@ -55,7 +55,7 @@ public class MenuState {
 
             Window.clear(input);
             Game.openingSound.play();
-            Game.state = Game.GAMEPLAYSTATE;
+            Game.state = Game.MENUPACMAN;
         }
         if (input.isKeyPressed(Input.KEY_M)) {
 
