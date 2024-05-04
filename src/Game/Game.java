@@ -60,11 +60,12 @@ public class Game extends BasicGame {
     static Image pacManIcon ;
     static Image msPacManIcon ;
     static Image youLostImage;
-    static Image[] ghosts = new Image[4];
+    static Image[] ghosts1 = new Image[4];
+    static Image[] ghosts2 = new Image[4];
     static ScoreManager Score;
 
     static LinkedList<Bullet> bulletList = new LinkedList<>();
-    static ArrayList<Enemy> enemyList = new ArrayList<>();
+    static ArrayList<Enemy> enemyList= new ArrayList<>();
     static Ammo[] ammos = new Ammo[10];
     static Player player;
 
@@ -212,10 +213,14 @@ public class Game extends BasicGame {
             pacManIcon = new Image("Images/Pac Man_1.png");
             msPacManIcon = new Image("Images/Ms. Pac Man_1.png");
             youLostImage = new Image("Images/GameLost.png");
-            ghosts[0] = new Image("Images/Clyde.png");
-            ghosts[1] = new Image("Images/Blinky.png");
-            ghosts[2] = new Image("Images/Inky.png");
-            ghosts[3] = new Image("Images/Pinky.png");
+            ghosts1[0] = new Image("Images/kingboo.png");
+            ghosts1[1] = new Image("Images/fungi.png");
+            ghosts1[2] = new Image("Images/turtle.png");
+            ghosts1[3] = new Image("Images/Bomb.png");
+            ghosts2[0] = new Image("Images/Clyde.png");
+            ghosts2[1] = new Image("Images/Blinky.png");
+            ghosts2[2] = new Image("Images/Inky.png");
+            ghosts2[3] = new Image("Images/Pinky.png");
             openingSound = new Sound("Sounds/openingSound.wav");
             shootSound = new Sound("Sounds/pacmanShoot.wav");
 
@@ -241,7 +246,7 @@ public class Game extends BasicGame {
      */
     @Override
     public void update(GameContainer gc, int delta) throws SlickException {
-        GameState gamePlayState=new GamePlayState();
+        GameState gamePlayState=new detailsDecorator(new GamePlayState());
 
         input = gc.getInput();
         mouseX = input.getMouseX();
@@ -304,9 +309,7 @@ public class Game extends BasicGame {
      */
     @Override
     public void render(GameContainer gc, Graphics g) throws SlickException {
-       GameState gamePlayState=new GamePlayState();
-
-          GameState decoratedGameState = new ScoreDecorator(gamePlayState);
+       GameState gamePlayState=new detailsDecorator(new GamePlayState());
         switch (state) {
 
             case MENUSTATE:
@@ -316,7 +319,7 @@ public class Game extends BasicGame {
 
             case GAMEPLAYSTATE:
              
-               decoratedGameState.render(gc, g);
+               gamePlayState.render(gc, g);
                 break;
 
             case MULTIPLAYERMENUSTATE:
