@@ -16,6 +16,7 @@ import static Game.Game.opponentMouseCoordinates;
 import static Game.Game.canCreateConnection;
 import static Game.Game.canSpawnAmmo;
 import static Game.Game.enemyList;
+import static Game.Game.enemyPositionX;
 import static Game.Game.smallFont;
 import static Game.Game.infoString;
 import static Game.Game.player;
@@ -37,8 +38,14 @@ public class MultiplayerGamePlayState {
     public static int canSpawnEnemy = ENEMY_DELAY;
     static boolean justStarted = true;
 
+    static int MultiplayerstartX;
+    static int MultiplayerstartY;
+    static int imageIndex;
+    static int playerToFollow;
+
     /**
      * Metodo generico per aggiornare la logica degli oggetti della scena
+     *
      * @param gc {@code GameContainer} del gioco
      * @param input L'input del gioco
      * @param delta {@code delta} del gioco
@@ -65,22 +72,23 @@ public class MultiplayerGamePlayState {
                 opponentFired = false;
             }
 
-            synchronized(enemyList) {
+            synchronized (enemyList) {
 
-                enemyList.stream().forEach((enemy) -> {
+                enemyList.stream().forEach((enemy_one) -> {
 
-                    if (enemy.getPlayerToFollow() == 0) {
+                    if (playerToFollow == 0) {
 
-                        if (Game.isServer)
-                            enemy.update(player.getCoordinates(), delta);
-                        else
-                            enemy.update(opponent.getCoordinates(), delta);
-                    }
-                    else {
-                        if (Game.isServer)
-                            enemy.update(opponent.getCoordinates(), delta);
-                        else
-                            enemy.update(player.getCoordinates(), delta);
+                        if (Game.isServer) {
+                            enemy_one.update(player.getCoordinates(), delta);
+                        } else {
+                            enemy_one.update(opponent.getCoordinates(), delta);
+                        }
+                    } else {
+                        if (Game.isServer) {
+                            enemy_one.update(opponent.getCoordinates(), delta);
+                        } else {
+                            enemy_one.update(player.getCoordinates(), delta);
+                        }
                     }
                 });
             }
@@ -89,7 +97,7 @@ public class MultiplayerGamePlayState {
                 bullet.update(delta);
             });
 
-            synchronized(opponentBulletList) {
+            synchronized (opponentBulletList) {
 
                 opponentBulletList.stream().forEach((bullet) -> {
                     bullet.update(delta);
@@ -138,11 +146,12 @@ public class MultiplayerGamePlayState {
         while (iter.hasNext()) {
 
             Bullet bullet = iter.next();
-            bullet.render();
-            if (bullet.isOutOfBounds(gc))
+            bullet.render(g);
+            if (bullet.isOutOfBounds(gc)) {
                 iter.remove();
+            }
         }
-        synchronized(opponentBulletList) {
+        synchronized (opponentBulletList) {
 
             Iterator<Bullet> oppIter = opponentBulletList.iterator();
             try {
@@ -151,7 +160,7 @@ public class MultiplayerGamePlayState {
 
                         Bullet bullet = oppIter.next();
                         synchronized (bullet) {
-                            bullet.render();
+                            bullet.render(g);
                             if (bullet.isOutOfBounds(gc)) {
                                 oppIter.remove();
                             }
@@ -162,7 +171,7 @@ public class MultiplayerGamePlayState {
                 System.out.println("Error rendering bullets");
             }
         }
-        synchronized(enemyList) {
+        synchronized (enemyList) {
 
             Iterator<Enemy> enemyIter = enemyList.iterator();
             try {
@@ -196,15 +205,20 @@ public class MultiplayerGamePlayState {
 
     public static void addOpponentBullet() {
 
-        synchronized(opponentBulletList) {
+        synchronized (opponentBulletList) {
             opponentBulletList.add(new Bullet(opponentCoordinates.x, opponentCoordinates.y, opponentMouseCoordinates.x, opponentMouseCoordinates.y));
         }
     }
 
- public static void addEnemy(int x, int y, int imageIndex, int playerToFollow) {
-    enemyList.add(EnemyFactory.createEnemy(x, y, imageIndex, playerToFollow));
-}
-
+    public static void addEnemy(int x, int y, int image_Index, int playerTo_Follow) {
+          EnemyFactory enemyFactory = new EnemyFactory();
+        Enemy enemy = enemyFactory.getEnemy("multiplayerEnemy");
+        MultiplayerstartX = x;
+        MultiplayerstartY = y;
+        imageIndex = image_Index;
+        playerToFollow = playerTo_Follow;
+        enemyList.add(enemy);
+    }
 
     public static void getOpponentCoordinates() {
 
@@ -212,14 +226,14 @@ public class MultiplayerGamePlayState {
         if (s.length == 6) {
 
             //if (Integer.parseInt(s[6]) != Game.multiplayerGameID) {
-
-                opponent.setHealth(Integer.parseInt(s[4]));
-                opponentCoordinates.x = Integer.parseInt(s[0]);
-                opponentCoordinates.y = Integer.parseInt(s[1]);
-                opponentMouseCoordinates.x = Integer.parseInt(s[2]);
-                opponentMouseCoordinates.y = Integer.parseInt(s[3]);
-                if (Score.getScore() < Integer.parseInt(s[5]))
-                    Score.setScore(Integer.parseInt(s[5]));
+            opponent.setHealth(Integer.parseInt(s[4]));
+            opponentCoordinates.x = Integer.parseInt(s[0]);
+            opponentCoordinates.y = Integer.parseInt(s[1]);
+            opponentMouseCoordinates.x = Integer.parseInt(s[2]);
+            opponentMouseCoordinates.y = Integer.parseInt(s[3]);
+            if (Score.getScore() < Integer.parseInt(s[5])) {
+                Score.setScore(Integer.parseInt(s[5]));
+            }
             //}
         }
     }
@@ -235,8 +249,9 @@ public class MultiplayerGamePlayState {
 
         Game.startDelay = START_DELAY;
         Game.winnerString = "SCORE: " + Score.getScore();
-        if (Score.checkNewMultiplayerHighScore())
+        if (Score.checkNewMultiplayerHighScore()) {
             Score.saveScores();
+        }
         player.reset();
         opponent.reset();
         bulletList.clear();
@@ -252,8 +267,9 @@ public class MultiplayerGamePlayState {
             System.out.println("Error while sending end game");
         }
         connection.stop();
-        if (Game.isServer)
+        if (Game.isServer) {
             server.close();
+        }
         sender.interrupt();
         receiver.interrupt();
         canCreateConnection = true;
@@ -274,14 +290,16 @@ public class MultiplayerGamePlayState {
             Score.setScore(0);
             canCreateConnection = true;
             try {
-                for (int i = 0; i < 24; i++)
+                for (int i = 0; i < 24; i++) {
                     connection.send("2");
+                }
             } catch (IOException e) {
                 System.out.println("ERROR WHILE SENDING END GAME");
             }
             connection.stop();
-            if (Game.isServer)
+            if (Game.isServer) {
                 server.close();
+            }
             sender.interrupt();
             receiver.interrupt();
         } catch (NullPointerException e) {
