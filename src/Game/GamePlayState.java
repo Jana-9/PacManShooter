@@ -4,6 +4,7 @@ import static Game.Game.NEW_DIFFICULTY_DELAY;
 import static Game.Game.AMMOS_DELAY;
 import static Game.Game.ENEMY_DELAY;
 import static Game.Game.BULLET_DELAY;
+import static Game.Game.MENUSTATE;
 import static Game.Game.START_DELAY;
 import static Game.Game.Score;
 import static Game.Game.ammos;
@@ -31,8 +32,10 @@ import java.util.Random;
 import org.newdawn.slick.Sound;
 import org.newdawn.slick.TrueTypeFont;
 
- interface GameState {
+interface GameState {
+
     void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException;
+
     void render(GameContainer gc, Graphics g) throws SlickException;
 }
 
@@ -40,6 +43,7 @@ public class GamePlayState implements GameState {
 
     /**
      * Metodo generico per aggiornare la logica degli oggetti della scena
+     *
      * @param gc {@code GameContainer} del gioco
      * @param input L'input del gioco
      * @param delta {@code delta} del gioco
@@ -47,7 +51,11 @@ public class GamePlayState implements GameState {
      * @param mouseY Coordinata Y del mouse
      * @throws SlickException
      */
-      @Override
+    static int startPlayX = enemyPositionX.nextInt(Window.WIDTH);
+    static int startPlayY = -90;
+
+    @Override
+
     public void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException {
 
         startDelay -= delta;
@@ -73,10 +81,11 @@ public class GamePlayState implements GameState {
                 Game.state = Game.PAUSESTATE;
             }
 
-            if (player.isAlive())
-                if (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON) && canFire <= 0)
+            if (player.isAlive()) {
+                if (input.isMouseButtonDown(Input.MOUSE_LEFT_BUTTON) && canFire <= 0) {
                     addBullet(mouseX, mouseY);
-
+                }
+            }
 
             if (!player.isAlive()) {
 
@@ -111,14 +120,15 @@ public class GamePlayState implements GameState {
             }
         }
     }
-  @Override
+
+    @Override
     public void render(GameContainer gc, Graphics g) throws SlickException {
 
         Iterator<Bullet> iter = bulletList.iterator();
         while (iter.hasNext()) {
 
             Bullet bullet = iter.next();
-            bullet.render();
+            bullet.render(g);
             if (bullet.isOutOfBounds(gc)) {
                 iter.remove();
             }
@@ -142,9 +152,6 @@ public class GamePlayState implements GameState {
         player.checkIfPickedUpAmmos(ammos);
         player.render(g);
 
-        smallFont.drawString("Score: " + Score.getScore(), 12, 12, Color.white);
-        smallFont.drawString("Ammos: " + player.getAmmos(), 12, 36, Color.yellow);
-        smallFont.drawCenteredString("PAUSE (ESC)", Window.HALF_WIDTH, 24, Color.red);
     }
 
     public static void addBullet(int x, int y) {
@@ -158,42 +165,55 @@ public class GamePlayState implements GameState {
         }
     }
 
-   public static void addEnemy() {
-    switch (new Random().nextInt(4)) {
-        case 0:
-            enemyList.add(EnemyFactory.createEnemy(enemyPositionX.nextInt(Window.WIDTH), -90));
-            break;
-        case 1:
-            enemyList.add(EnemyFactory.createEnemy(enemyPositionX.nextInt(Window.WIDTH), Window.HEIGHT + 90));
-            break;
-        case 2:
-            enemyList.add(EnemyFactory.createEnemy(-90, enemyPositionY.nextInt(Window.HEIGHT)));
-            break;
-        case 3:
-            enemyList.add(EnemyFactory.createEnemy(Window.WIDTH + 90, enemyPositionY.nextInt(Window.HEIGHT)));
-            break;
+    public static void addEnemy() {
+        EnemyFactory enemyFactory = new EnemyFactory();
+        Enemy enemy = enemyFactory.getEnemy("PlayEnemy");
+        switch (new Random().nextInt(4)) {
+            case 0:
+                startPlayX = enemyPositionX.nextInt(Window.WIDTH);
+                startPlayY = -90;
+                enemyList.add(enemy);
+                break;
+            case 1:
+                startPlayX = enemyPositionX.nextInt(Window.WIDTH);
+                startPlayY = Window.HEIGHT + 90;
+                enemyList.add(enemy);
+                break;
+            case 2:
+                startPlayX = -90;
+                startPlayY = enemyPositionY.nextInt(Window.HEIGHT);
+                enemyList.add(enemy);
+                break;
+            case 3:
+                startPlayX = Window.WIDTH + 90;
+                startPlayY = enemyPositionY.nextInt(Window.HEIGHT);
+                enemyList.add(enemy);
+                break;
+        }
     }
-}
 
     public static void gameOver(Input input) {
 
         Window.clear(input);
-        if (Score.checkNewHighScore())
+        if (Score.checkNewHighScore()) {
             Score.saveScores();
+        }
         startDelay = START_DELAY;
         canSpawnAmmo = AMMOS_DELAY;
         paused = false;
         player.reset();
         enemyList.clear();
         bulletList.clear();
-        for (Ammo ammo : ammos)
+        for (Ammo ammo : ammos) {
             ammo.pick();
+        }
         Score.resetScore();
         Game.state = Game.GAMEOVERSTATE;
     }
 }
 
- abstract class GameStateDecorator implements GameState {
+abstract class GameStateDecorator implements GameState {
+
     protected GameState decoratedObject;
 
     public GameStateDecorator(GameState decoratedObject) {
@@ -211,31 +231,30 @@ public class GamePlayState implements GameState {
     }
 }
 
-  class ScoreDecorator extends GameStateDecorator {
-    public ScoreDecorator(GameState decoratedObject) {
+class detailsDecorator extends GameStateDecorator {
+
+    public detailsDecorator(GameState decoratedObject) {
         super(decoratedObject);
     }
- @Override
+
+    @Override
     public void update(GameContainer gc, Input input, int delta, int mouseX, int mouseY) throws SlickException {
-       
+
         decoratedObject.update(gc, input, delta, mouseX, mouseY);
     }
+
     @Override
     public void render(GameContainer gc, Graphics g) throws SlickException {
-   
-        renderScore(g);
-        
-        // Call the render method of the decorated object
         decoratedObject.render(gc, g);
-       
+        renderDetails();
+
     }
 
-    private void renderScore(Graphics g) {
-        // Render score logic
-          g.setColor(Color.green);
-       g.setFont(new TrueTypeFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 30), true)); // Adjust font size as needed
-        g.drawString("Score: " + Score.getScore(), 20, 20); // Adjust position as needed
+    private void renderDetails() {
+        smallFont.drawString("Score : " + Score.getScore(), 18, 24, Color.blue);
+        smallFont.drawString("Ammos : " + player.getAmmos(), 20, 50, Color.red);
+        smallFont.drawCenteredString("PAUSE (ESC)", Window.HALF_WIDTH, 30, Color.green);
+
     }
-    
-    
+
 }
