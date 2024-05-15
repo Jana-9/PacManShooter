@@ -47,21 +47,42 @@ class PacMan implements Player {
     private Point coordinates = new Point(Window.WIDTH / 2, Window.HEIGHT / 2);
     private final int speed = 324, damage = 10;
     private boolean alive = true;
-    private HealthBar healthBar;
+    private HealthBarState healthBarState;
+     private HealthBar healthBar =new HealthBar();
     private int ammos = 50;
     private int ID = Game.players++;
 
     public PacMan() {
         loadImage();
-        this.healthBar = new HealthBar(0, 0);
+        healthBarState=new GreenHealthBarState();
+     
+
+    }
+      public void ChangeState(int healthState) {
+        if (healthState >40) {
+            healthBar.setState(new GreenHealthBarState());
+              healthBarState=new GreenHealthBarState();
+        }
+        else if (healthState <= 40 && healthState >= 28) {
+            healthBar.setState(new OrangeHealthBarState());
+              healthBarState=new OrangeHealthBarState();
+            
+        } else if (healthState <= 27) {
+            healthBar.setState(new RedHealthBarState());
+             healthBarState=new RedHealthBarState();
+               
+        }
+
     }
 
     @Override
     public void render(Graphics g) {
+        
         if (isAlive()) {
             this.playerImage.drawCentered(this.coordinates.x, this.coordinates.y);
             this.playerImage.setRotation((float) this.rotation);
-            this.healthBar.render(this.coordinates.x - 24, this.coordinates.y - 50, this.health / 2, g);
+            ChangeState(this.health / 2);
+            this.healthBarState.render(this.coordinates.x - 24, this.coordinates.y - 50, this.health / 2, g,healthBar);
         }
     }
 
