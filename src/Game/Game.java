@@ -31,7 +31,7 @@ public class Game extends BasicGame {
     static Input input;
     public static int mouseX, mouseY;
     static final int MENUSTATE = 0, GAMEPLAYSTATE = 1, MULTIPLAYERMENUSTATE = 2, MULTIPLAYERGAMEPLAYSTATE = 3,
-                    MULTIPLAYERGAMEOVERSTATE = 4, LEADERBOARDSTATE = 5, PAUSESTATE = 6, GAMEOVERSTATE = 7, MENUPACMAN = 8;
+            MULTIPLAYERGAMEOVERSTATE = 4, LEADERBOARDSTATE = 5, PAUSESTATE = 6, GAMEOVERSTATE = 7, MENUPACMAN = 8;
     static int state = MENUSTATE;
     static boolean canCreateConnection = true;
     static boolean paused = false;
@@ -45,9 +45,9 @@ public class Game extends BasicGame {
     public static Button retryButton;
     public static Button serverButton;
     public static Button showMultiplayerScoresButton;
-    static  Button pacManButton;
-    static  Button msPacManButton ;
-    static  Button menuCharacterTitle;
+    static Button pacManButton;
+    static Button msPacManButton;
+    static Button menuCharacterTitle;
 
     static GameFont bigFont;
     static GameFont playFont;
@@ -57,15 +57,15 @@ public class Game extends BasicGame {
     static GameFont multiplayerFont;
     static GameFont smallFont;
     static Image titleImage;
-    static Image pacManIcon ;
-    static Image msPacManIcon ;
+    static Image pacManIcon;
+    static Image msPacManIcon;
     static Image youLostImage;
     static Image[] ghosts1 = new Image[4];
     static Image[] ghosts2 = new Image[4];
     static ScoreManager Score;
 
     static LinkedList<Bullet> bulletList = new LinkedList<>();
-    static ArrayList<Enemy> enemyList= new ArrayList<>();
+    static ArrayList<Enemy> enemyList = new ArrayList<>();
     static Ammo[] ammos = new Ammo[10];
     static Player player;
 
@@ -110,6 +110,8 @@ public class Game extends BasicGame {
     static UDPReceiverThread receiver;
     public static String localIP = null;
 
+    private MenuState menuState;
+
     public static void main(String[] args) throws SlickException {
 
         try {
@@ -138,10 +140,12 @@ public class Game extends BasicGame {
 
     public Game(String title) {
         super(title);
+
     }
 
     /**
      * Inizializza tutte le variabili del gioco.
+     *
      * @param gc {@code GameContainer} del gioco
      * @throws SlickException
      */
@@ -167,9 +171,8 @@ public class Game extends BasicGame {
         IPFont = new GameFont(54f);
         DestinationPortFont = new GameFont(44f);
         SourcePortFont = new GameFont(44f);
-        
 
-        Score =ScoreManager.getInstance();
+        Score = ScoreManager.getInstance();
         Score.resetScore();
 
         IPTextField = new TextField(gc, IPFont.getFont(), Window.HALF_WIDTH - 180, Window.HALF_HEIGHT - 200, IPFont.getStringWidth("555555555555555"), 54);
@@ -190,23 +193,23 @@ public class Game extends BasicGame {
         playButton = new Button("PLAY (ENTER)", Window.HALF_WIDTH, Window.HALF_HEIGHT, 64, optionBlue);
         multiplayerButton = new Button("MULTIPLAYER (M)", Window.HALF_WIDTH, Window.HALF_HEIGHT + 64, 44, optionBlue);
         leaderboardButton = new Button("LEADERBOARD (L)", Window.HALF_WIDTH, Window.HALF_HEIGHT + 128, 44, optionBlue);
-        quitButton = new Button("QUIT (ESC)", Window.HALF_WIDTH, Window.HEIGHT - Window.HEIGHT/20, 44, Color.red);
-        menuButton = new Button("MENU (ESC)", Window.HALF_WIDTH, Window.HEIGHT - Window.HEIGHT/20, 44, Color.red);
+        quitButton = new Button("QUIT (ESC)", Window.HALF_WIDTH, Window.HEIGHT - Window.HEIGHT / 20, 44, Color.red);
+        menuButton = new Button("MENU (ESC)", Window.HALF_WIDTH, Window.HEIGHT - Window.HEIGHT / 20, 44, Color.red);
         resumeButton = new Button("RESUME (R)", Window.HALF_WIDTH, Window.HALF_HEIGHT, 64, optionBlue);
         retryButton = new Button("RETRY (R)", Window.HALF_WIDTH, Window.HALF_HEIGHT, 64, optionBlue);
         serverButton = new Button("SERVER", Window.HALF_WIDTH, Window.HALF_HEIGHT + 40, 32, Color.red);
-        showMultiplayerScoresButton = new Button("SHOW MULTIPLAYER HIGHSCORES", Window.HALF_WIDTH, quitButton.getY() -  Window.HEIGHT/16, 24, Color.white);
-        
-        menuCharacterTitle = new Button("CHOOSE THE CHARACTER", Window.HALF_WIDTH, Window.HALF_HEIGHT+-200, 64, Color.yellow);
-        pacManButton = new Button("PacMan",  Window.HALF_WIDTH+ -300, Window.HALF_HEIGHT + 200, 44, optionBlue);
-        msPacManButton = new Button("Ms.PacMan", Window.HALF_WIDTH+ 250, Window.HALF_HEIGHT + 200, 44, optionBlue);
+        showMultiplayerScoresButton = new Button("SHOW MULTIPLAYER HIGHSCORES", Window.HALF_WIDTH, quitButton.getY() - Window.HEIGHT / 16, 24, Color.white);
 
+        menuCharacterTitle = new Button("CHOOSE THE CHARACTER", Window.HALF_WIDTH, Window.HALF_HEIGHT + -200, 64, Color.yellow);
+        pacManButton = new Button("PacMan", Window.HALF_WIDTH + -300, Window.HALF_HEIGHT + 200, 44, optionBlue);
+        msPacManButton = new Button("Ms.PacMan", Window.HALF_WIDTH + 250, Window.HALF_HEIGHT + 200, 44, optionBlue);
 
-       // player = new Player();
+        // player = new Player();
         opponent = new Opponent();
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++) {
             ammos[i] = new Ammo();
+        }
 
         try {
             titleImage = new Image("Images/Title.png");
@@ -240,13 +243,16 @@ public class Game extends BasicGame {
 
     /**
      * Metodo generico per aggiornare la logica degli oggetti di tutto il gioco
+     *
      * @param gc {@code GameContainer} del gioco
      * @param delta {@code delta} del gioco
      * @throws SlickException
      */
     @Override
     public void update(GameContainer gc, int delta) throws SlickException {
-        GameState gamePlayState=new detailsDecorator(new GamePlayState());
+        GameState gamePlayState = new detailsDecorator(new GamePlayState());
+        InputHandlerStrategy mouseClickHandler = new MouseClickHandler();
+        InputHandlerStrategy keyPressHandler = new KeyPressHandler();
 
         input = gc.getInput();
         mouseX = input.getMouseX();
@@ -255,8 +261,11 @@ public class Game extends BasicGame {
         switch (state) {
 
             case MENUSTATE:
+                menuState = new MenuState(mouseClickHandler);
+                menuState.update(gc, input, delta, mouseX, mouseY);
 
-                MenuState.update(gc, input, delta, mouseX, mouseY);
+                menuState = new MenuState(keyPressHandler);
+                menuState.update(gc, input, delta, mouseX, mouseY);
                 break;
 
             case GAMEPLAYSTATE:
@@ -294,32 +303,38 @@ public class Game extends BasicGame {
 
                 GameOverState.update(gc, input, delta, mouseX, mouseY);
                 break;
-                
-             case MENUPACMAN:
-                MenuCharacter.update( gc, input,  delta,  mouseX,  mouseY);
+
+            case MENUPACMAN:
+                MenuCharacter.update(gc, input, delta, mouseX, mouseY);
                 break;
         }
     }
 
     /**
      * Metodo generico per aggiornare la logica degli oggetti di tutto il gioco
+     *
      * @param gc {@code GameContainer} del gioco
      * @param g L'oggetto che si occupa di disergnare su schermo
      * @throws SlickException
      */
     @Override
     public void render(GameContainer gc, Graphics g) throws SlickException {
-       GameState gamePlayState=new detailsDecorator(new GamePlayState());
+        GameState gamePlayState = new detailsDecorator(new GamePlayState());
+        InputHandlerStrategy mouseClickHandler = new MouseClickHandler();
+        InputHandlerStrategy keyPressHandler = new KeyPressHandler();
         switch (state) {
 
             case MENUSTATE:
+                menuState = new MenuState(mouseClickHandler);
+                menuState.render(gc, g);
 
-                MenuState.render(gc, g);
+                menuState = new MenuState(keyPressHandler);
+                menuState.render(gc, g);
                 break;
 
             case GAMEPLAYSTATE:
-             
-               gamePlayState.render(gc, g);
+
+                gamePlayState.render(gc, g);
                 break;
 
             case MULTIPLAYERMENUSTATE:
@@ -351,16 +366,17 @@ public class Game extends BasicGame {
 
                 GameOverState.render(gc, g);
                 break;
-                
+
             case MENUPACMAN:
-                MenuCharacter.render( gc, g);
+                MenuCharacter.render(gc, g);
                 break;
-                
+
         }
     }
 
     /**
-     * Apre la connessione tra i due giocatori e apre il server che serve ad inviare le posizioni dei nemici.
+     * Apre la connessione tra i due giocatori e apre il server che serve ad
+     * inviare le posizioni dei nemici.
      */
     private void createConnection() {
 
@@ -386,10 +402,11 @@ public class Game extends BasicGame {
             try {
 
                 InetAddress serverAddress;
-                if (isServer)
+                if (isServer) {
                     serverAddress = InetAddress.getByName("localhost");
-                else
+                } else {
                     serverAddress = InetAddress.getByName(IP);
+                }
 
                 sender = new UDPSenderThread(serverAddress, serverPort);
                 sender.start();
