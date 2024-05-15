@@ -11,6 +11,7 @@ import java.util.ConcurrentModificationException;
 
 /**
  * Rappresenta il secondo giocatore in una partita multiplayer.
+ *
  * @author carloblasi
  */
 public class Opponent {
@@ -21,7 +22,8 @@ public class Opponent {
     private Point Coordinates = new Point(Window.HALF_WIDTH, Window.HALF_HEIGHT);
     private final int damage = 10;
     private boolean alive = true;
-    private HealthBar healthbar;
+    private HealthBar healthbar = new HealthBar();
+    private HealthBarState healthBarState;
     static int ID = Game.players++;
     private float xRatio = 1;
     private float yRatio = 1;
@@ -32,7 +34,8 @@ public class Opponent {
     public Opponent() {
 
         loadImage();
-        healthbar = new HealthBar(this.Coordinates.x, this.Coordinates.y);
+        healthBarState = new GreenHealthBarState();
+
     }
 
     /*public boolean setScreenRatio() {
@@ -54,9 +57,22 @@ public class Opponent {
         }
         return false;
     }*/
+    public void ChangeState(int healthState) {
+        if (healthState <= 40 && healthState >= 28) {
+            healthbar.setState(new OrangeHealthBarState());
+            healthBarState = new OrangeHealthBarState();
+
+        } else if (healthState <= 27) {
+            healthbar.setState(new RedHealthBarState());
+            healthBarState = new RedHealthBarState();
+
+        }
+
+    }
 
     /**
      * Disegna il secondo giocaotore se è vivo.
+     *
      * @param g La grafica del gioco
      */
     public void render(Graphics g) {
@@ -64,8 +80,9 @@ public class Opponent {
         if (isAlive()) {
 
             playerImage.drawCentered(this.Coordinates.x, this.Coordinates.y);
-            playerImage.setRotation((float)this.rotation);
-            healthbar.render(this.Coordinates.x - 48/2, this.Coordinates.y - 80+30, this.getHealth()/2, g, true);
+            playerImage.setRotation((float) this.rotation);
+            ChangeState(this.getHealth() / 2);
+            healthBarState.render(this.Coordinates.x - 48 / 2, this.Coordinates.y - 80 + 30, this.getHealth() / 2, g,healthbar);
         }
     }
 
@@ -82,7 +99,9 @@ public class Opponent {
     }
 
     /**
-     * Aggiorna la posizione del secondo giocatore in base alle coordinate che arrivano dalla classe {@code Connection}.
+     * Aggiorna la posizione del secondo giocatore in base alle coordinate che
+     * arrivano dalla classe {@code Connection}.
+     *
      * @param oppCoordinates Coordinate in cui spostare il secondo giocatore
      * @param x Coordinata X del mouse del secondo giocatore
      * @param y Coordinata Y del mouse del secondo giocatore
@@ -91,45 +110,55 @@ public class Opponent {
 
         if (this.alive) {
 
-            this.rotation = (int)getAngleFromPoint(new Point(x, y), this.Coordinates);
+            this.rotation = (int) getAngleFromPoint(new Point(x, y), this.Coordinates);
 
             this.Coordinates.x = (int) (oppCoordinates.x * xRatio);
             this.Coordinates.y = (int) (oppCoordinates.y * yRatio);
 
-            if(this.Coordinates.y >= Window.HEIGHT - 45)
+            if (this.Coordinates.y >= Window.HEIGHT - 45) {
                 this.Coordinates.y = Window.HEIGHT - 45;
-            if(this.Coordinates.y <= 45)
+            }
+            if (this.Coordinates.y <= 45) {
                 this.Coordinates.y = 45;
-            if(this.Coordinates.x >= Window.WIDTH - 45)
+            }
+            if (this.Coordinates.x >= Window.WIDTH - 45) {
                 this.Coordinates.x = Window.WIDTH - 45;
-            if(this.Coordinates.x <= 45)
+            }
+            if (this.Coordinates.x <= 45) {
                 this.Coordinates.x = 45;
+            }
 
-            if (health == 0)
+            if (health == 0) {
                 this.alive = false;
+            }
         }
     }
 
     /**
-     * Controlla se il secondo giocatore ha colliso con un proiettile e diminuisce la sua vita nel caso sia successo.
+     * Controlla se il secondo giocatore ha colliso con un proiettile e
+     * diminuisce la sua vita nel caso sia successo.
+     *
      * @param bullets La lista che contiene i proiettili sparati
      * @throws SlickException
      */
     public void detectCollisionWithBullet(Bullet[] bullets) throws SlickException {
 
         for (Bullet bullet : bullets) {
-            if (this.isAlive())
-                if (Math.sqrt((bullet.getX() - this.getX()) * (bullet.getX() - this.getX()) +
-                              (bullet.getY() - this.getY()) * (bullet.getY() - this.getY())) <=
-                               this.radius + bullet.getRadius()) {
+            if (this.isAlive()) {
+                if (Math.sqrt((bullet.getX() - this.getX()) * (bullet.getX() - this.getX())
+                        + (bullet.getY() - this.getY()) * (bullet.getY() - this.getY()))
+                        <= this.radius + bullet.getRadius()) {
 
                     bullet.remove();
                 }
+            }
         }
     }
 
     /**
-     * Controlla se il secondo giocatore ha colliso con un proiettile e diminuisce la sua vita nel caso sia successo.
+     * Controlla se il secondo giocatore ha colliso con un proiettile e
+     * diminuisce la sua vita nel caso sia successo.
+     *
      * @param bullets La lista che contiene i proiettili sparati
      * @throws SlickException
      */
@@ -140,20 +169,23 @@ public class Opponent {
         while (iter.hasNext()) {
             Bullet bullet = iter.next();
 
-            if (this.isAlive())
-                if (Math.sqrt((bullet.getX() - this.getX()) * (bullet.getX() - this.getX()) +
-                              (bullet.getY() - this.getY()) * (bullet.getY() - this.getY())) <=
-                               this.radius + bullet.getRadius()) {
+            if (this.isAlive()) {
+                if (Math.sqrt((bullet.getX() - this.getX()) * (bullet.getX() - this.getX())
+                        + (bullet.getY() - this.getY()) * (bullet.getY() - this.getY()))
+                        <= this.radius + bullet.getRadius()) {
 
                     this.hit();
                     iter.remove();
                 }
+            }
         }
     }
 
     /**
-     * Controlla se il secondo giocatore ha colliso con un nemico e diminuisce la sua vita nel caso sia successo.
-     * Rimuove anche il nemico dalla lista che lo contiene.
+     * Controlla se il secondo giocatore ha colliso con un nemico e diminuisce
+     * la sua vita nel caso sia successo. Rimuove anche il nemico dalla lista
+     * che lo contiene.
+     *
      * @param enemies La lista che contiene i nemici ancoara vivi
      * @throws SlickException
      */
@@ -165,15 +197,17 @@ public class Opponent {
             while (iter.hasNext()) {
                 Enemy enemy = iter.next();
 
-                if (this.health != 0)
-                    if (enemy.isAlive())
-                        if (Math.sqrt((enemy.getX() - this.getX()) * (enemy.getX() - this.getX()) +
-                                      (enemy.getY() - this.getY()) * (enemy.getY() - this.getY())) <=
-                                       this.radius + enemy.getRadius()) {
+                if (this.health != 0) {
+                    if (enemy.isAlive()) {
+                        if (Math.sqrt((enemy.getX() - this.getX()) * (enemy.getX() - this.getX())
+                                + (enemy.getY() - this.getY()) * (enemy.getY() - this.getY()))
+                                <= this.radius + enemy.getRadius()) {
 
                             iter.remove();
                             this.hit();
                         }
+                    }
+                }
             }
         } catch (ConcurrentModificationException e) {
             System.out.println("Poteva andare peggio...");
@@ -181,7 +215,9 @@ public class Opponent {
     }
 
     /**
-     * Calcola l'angolo (compreso tra 0 e 359 inclusi) formato dalla posizione del secondo giocatore e dalla posizione del puntatore.
+     * Calcola l'angolo (compreso tra 0 e 359 inclusi) formato dalla posizione
+     * del secondo giocatore e dalla posizione del puntatore.
+     *
      * @param firstPoint Coordinate del secondo giocatore
      * @param secondPoint Coordinate del puntatore
      * @return l'angolo
@@ -191,16 +227,18 @@ public class Opponent {
         double r;
 
         if (((secondPoint.x) > firstPoint.x)) //above 0 to 180 degrees
+        {
             r = (Math.atan2((secondPoint.x - firstPoint.x), (firstPoint.y - secondPoint.y)) * 180 / Math.PI) + 90;
-
-        else if (((secondPoint.x) < firstPoint.x)) //above 180 degrees to 360/0
+        } else if (((secondPoint.x) < firstPoint.x)) //above 180 degrees to 360/0
+        {
             r = 360 - (Math.atan2((firstPoint.x - secondPoint.x), (firstPoint.y - secondPoint.y)) * 180 / Math.PI) + 90;
+        } else {
+            r = Math.atan2(0, 0) + 90;
+        }
 
-        else
-            r = Math.atan2(0 ,0) + 90;
-
-        if (r == 90 && mouseY < this.Coordinates.y)
+        if (r == 90 && mouseY < this.Coordinates.y) {
             return 270;
+        }
 
         return r;
     }
@@ -210,6 +248,7 @@ public class Opponent {
      */
     public void hit() {
         health -= this.damage;
+
     }
 
     public int getHealth() {
@@ -221,11 +260,11 @@ public class Opponent {
     }
 
     public int getX() {
-        return (int)this.Coordinates.getX();
+        return (int) this.Coordinates.getX();
     }
 
     public int getY() {
-        return (int)this.Coordinates.getY();
+        return (int) this.Coordinates.getY();
     }
 
     public boolean isAlive() {
@@ -251,4 +290,3 @@ public class Opponent {
         this.Coordinates = new Point(Window.HALF_WIDTH, Window.HALF_HEIGHT);
     }
 }
-
