@@ -10,7 +10,7 @@ interface HealthBarState {
     void render(int x, int y, int health, Graphics g, HealthBar healthBar);
 }
 
-// Concrete implementation of a green health bar state
+
 class GreenHealthBarState implements HealthBarState {
 
     @Override
@@ -23,7 +23,7 @@ class GreenHealthBarState implements HealthBarState {
     }
 }
 
-// Concrete implementation of a blue health bar state
+
 class OrangeHealthBarState implements HealthBarState {
 
     @Override
@@ -35,7 +35,7 @@ class OrangeHealthBarState implements HealthBarState {
     }
 }
 
-// Concrete implementation of a red health bar state
+
 class RedHealthBarState implements HealthBarState {
 
     @Override
