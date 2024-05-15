@@ -15,29 +15,48 @@ import org.newdawn.slick.Sound;
  *
  * @author razan
  */
-
 public class MsPacMan {
+
     private Image playerImage;
     private int health = 100;
     private int rotation = 0, radius = 22;
     private Point coordinates = new Point(Window.WIDTH / 2, Window.HEIGHT / 2);
     private final int speed = 324, damage = 10;
     private boolean alive = true;
-    private HealthBar healthBar;
+    private HealthBar healthBar=new HealthBar();
+    private HealthBarState healthBarState=new GreenHealthBarState();
     private int ammos = 50;
     private int ID = Game.players++;
 
     MsPacMan() {
         loadImagee();
-        this.healthBar = new HealthBar(0, 0);    
+        healthBar=new HealthBar();
+      
+
     }
-    
+ public void ChangeState(int healthState) {
+        if (healthState >40) {
+            healthBar.setState(new GreenHealthBarState());
+              healthBarState=new GreenHealthBarState();
+        }
+        else if (healthState <= 40 && healthState >= 28) {
+            healthBar.setState(new OrangeHealthBarState());
+              healthBarState=new OrangeHealthBarState();
+            
+        } else if (healthState <= 27) {
+            healthBar.setState(new RedHealthBarState());
+             healthBarState=new RedHealthBarState();
+               
+        }
+
+    }
 
     public void renderr(Graphics g) {
         if (isAlivee()) {
             this.playerImage.drawCentered(this.coordinates.x, this.coordinates.y);
             this.playerImage.setRotation((float) this.rotation);
-            this.healthBar.render(this.coordinates.x - 24, this.coordinates.y - 50, this.health / 2, g);
+              ChangeState(this.health / 2);
+            this.healthBarState.render(this.coordinates.x - 24, this.coordinates.y - 50, this.health / 2, g,healthBar);
         }
     }
 
@@ -54,26 +73,35 @@ public class MsPacMan {
             this.rotation = (int) getAngleFromPointt(new Point(input.getMouseX(), input.getMouseY()), this.coordinates);
             int speed = (this.speed * delta / 1000);
 
-            if (input.isKeyDown(Input.KEY_D))
+            if (input.isKeyDown(Input.KEY_D)) {
                 this.coordinates.x += speed;
-            if (input.isKeyDown(Input.KEY_A))
+            }
+            if (input.isKeyDown(Input.KEY_A)) {
                 this.coordinates.x -= speed;
-            if (input.isKeyDown(Input.KEY_W))
+            }
+            if (input.isKeyDown(Input.KEY_W)) {
                 this.coordinates.y -= speed;
-            if (input.isKeyDown(Input.KEY_S))
+            }
+            if (input.isKeyDown(Input.KEY_S)) {
                 this.coordinates.y += speed;
+            }
 
-            if (this.coordinates.y >= Window.HEIGHT - 45)
+            if (this.coordinates.y >= Window.HEIGHT - 45) {
                 this.coordinates.y = Window.HEIGHT - 45;
-            if (this.coordinates.y <= 45)
+            }
+            if (this.coordinates.y <= 45) {
                 this.coordinates.y = 45;
-            if (this.coordinates.x >= Window.WIDTH - 45)
+            }
+            if (this.coordinates.x >= Window.WIDTH - 45) {
                 this.coordinates.x = Window.WIDTH - 45;
-            if (this.coordinates.x <= 45)
+            }
+            if (this.coordinates.x <= 45) {
                 this.coordinates.x = 45;
+            }
 
-            if (health == 0)
+            if (health == 0) {
                 this.alive = false;
+            }
         }
     }
 
@@ -82,9 +110,9 @@ public class MsPacMan {
             Iterator<Enemy> iter = enemies.iterator();
             while (iter.hasNext()) {
                 Enemy enemy = iter.next();
-                if (this.health != 0 && enemy.isAlive() &&
-                        Math.sqrt(Math.pow((enemy.getX() - this.coordinates.getX()), 2) +
-                                Math.pow((enemy.getY() - this.coordinates.getY()), 2)) <= this.radius + enemy.getRadius()) {
+                if (this.health != 0 && enemy.isAlive()
+                        && Math.sqrt(Math.pow((enemy.getX() - this.coordinates.getX()), 2)
+                                + Math.pow((enemy.getY() - this.coordinates.getY()), 2)) <= this.radius + enemy.getRadius()) {
                     iter.remove();
                     this.hitt();
                 }
@@ -98,9 +126,9 @@ public class MsPacMan {
         Iterator<Bullet> iter = bullets.iterator();
         while (iter.hasNext()) {
             Bullet bullet = iter.next();
-            if (this.isAlivee() &&
-                    Math.sqrt(Math.pow((bullet.getX() - this.coordinates.getX()), 2) +
-                            Math.pow((bullet.getY() - this.coordinates.getY()), 2)) <= this.radius + bullet.getRadius()) {
+            if (this.isAlivee()
+                    && Math.sqrt(Math.pow((bullet.getX() - this.coordinates.getX()), 2)
+                            + Math.pow((bullet.getY() - this.coordinates.getY()), 2)) <= this.radius + bullet.getRadius()) {
                 this.hitt();
                 iter.remove();
             }
@@ -109,9 +137,9 @@ public class MsPacMan {
 
     public void checkIfPickedUpAmmoss(Ammo[] ammos) throws SlickException {
         for (Ammo ammo : ammos) {
-            if (this.health != 0 && !ammo.alreadyPicked() &&
-                    Math.sqrt(Math.pow((ammo.getX() - this.coordinates.getX()), 2) +
-                            Math.pow((ammo.getY() - this.coordinates.getY()), 2)) <= this.radius + ammo.getRadius()) {
+            if (this.health != 0 && !ammo.alreadyPicked()
+                    && Math.sqrt(Math.pow((ammo.getX() - this.coordinates.getX()), 2)
+                            + Math.pow((ammo.getY() - this.coordinates.getY()), 2)) <= this.radius + ammo.getRadius()) {
                 ammo.pick();
                 new Sound("Sounds/pacmanPickedAmmo.wav").play();
                 this.ammos += 50;
@@ -121,14 +149,16 @@ public class MsPacMan {
 
     private double getAngleFromPointt(Point firstPoint, Point secondPoint) {
         double r;
-        if (secondPoint.x > firstPoint.x)
+        if (secondPoint.x > firstPoint.x) {
             r = (Math.atan2((secondPoint.x - firstPoint.x), (firstPoint.y - secondPoint.y)) * 180 / Math.PI) + 90;
-        else if (secondPoint.x < firstPoint.x)
+        } else if (secondPoint.x < firstPoint.x) {
             r = 360 - (Math.atan2((firstPoint.x - secondPoint.x), (firstPoint.y - secondPoint.y)) * 180 / Math.PI) + 90;
-        else
+        } else {
             r = Math.atan2(0, 0) + 90;
-        if (r == 90 && mouseY < this.coordinates.y)
+        }
+        if (r == 90 && mouseY < this.coordinates.y) {
             return 270;
+        }
         return r;
     }
 
@@ -174,5 +204,6 @@ public class MsPacMan {
         this.ammos = 50;
         loadImagee();
         this.coordinates = new Point(Window.WIDTH / 2, Window.HEIGHT / 2);
+
     }
 }
