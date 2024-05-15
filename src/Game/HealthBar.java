@@ -1,66 +1,89 @@
 package Game;
 
-import static Game.GameFont.optionBlue;
+import static java.lang.String.valueOf;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 
-/**
- * Rappresenta la barra della vita disegnata vicino ad un {@code Player}.
- * @author carloblasi
- */
-public class HealthBar {
+// Interface for different health bar states
+interface HealthBarState {
 
-    private int x, y;
+    void render(int x, int y, int health, Graphics g, HealthBar healthBar);
+}
 
-    /**
-     * Inizializza la barra della vita con la posizone data
-     * @param x La posizione sull'asse X
-     * @param y La posizione sull'asse y
-     */
-    public HealthBar(int x, int y) {
+// Concrete implementation of a green health bar state
+class GreenHealthBarState implements HealthBarState {
 
-        this.x = x;
-        this.y = y;
-    }
-
-    /**
-     * Disegna la barra della vita di colore rosso e posizione fissa con la vita del giocatore
-     * @param health La vita del giocatore
-     * @param g La grafica del gioco
-     */
-    public void render(int health, Graphics g) {
-
-        g.setColor(Color.red);
-        g.fillRect(this.x, this.y, health, 10);
-        g.setColor(Color.white);
-    }
-
-    /**
-     * Disegna la barra della vita di colore verde con la vita del giocatore nella posizione data.
-     * @param x La posizione sull'asse X
-     * @param y La posizione sull'asse Y
-     * @param health La vita del giocatore
-     * @param g La grafica del gioco
-     */
-    public void render(int x, int y, int health, Graphics g) {
-
+    @Override
+    public void render(int x , int y, int health, Graphics g, HealthBar healthBar) {
+     healthBar.stateNow(x,y);
         g.setColor(Color.green);
         g.fillRect(x, y, health, 6);
         g.setColor(Color.white);
+
     }
+}
 
-    /**
-     * Disegna la barra della vita di colore azzurro con la vita del giocatore nella posizione data.
-     * @param x La posizione sull'asse X
-     * @param y La posizione sull'asse Y
-     * @param health La vita del giocatore
-     * @param g La grafica del gioco
-     * @param isAnotherPlayer Boolean per dire se la barra della vita appartiene ad un altro giocatore
-     */
-    public void render(int x, int y, int health, Graphics g, boolean isAnotherPlayer) {
+// Concrete implementation of a blue health bar state
+class OrangeHealthBarState implements HealthBarState {
 
-        g.setColor(optionBlue);
+    @Override
+    public void render(int x, int y, int health, Graphics g, HealthBar healthBar) {
+        healthBar.stateNow(x,y);
+        g.setColor(Color.orange);
         g.fillRect(x, y, health, 6);
         g.setColor(Color.white);
     }
+}
+
+// Concrete implementation of a red health bar state
+class RedHealthBarState implements HealthBarState {
+
+    @Override
+    public void render(int x, int y, int health, Graphics g, HealthBar healthBar) {
+        healthBar.stateNow(x,y);
+        g.setColor(Color.red);
+        g.fillRect(x, y, health, 6);
+        g.setColor(Color.white);
+    }
+}
+
+
+
+// Context class that uses the state
+public class HealthBar {
+
+
+    private HealthBarState state;
+
+    public HealthBar() {
+
+        state = new GreenHealthBarState();
+    }
+
+    // Method to change the state
+    public void setState(HealthBarState state) {
+        this.state = state;
+
+    }
+     public HealthBarState getState() {
+        return state;
+
+    }
+
+     public void stateNow(int x , int y){
+         String state =valueOf(getState());
+         
+         String Nowstate="Low damage";
+
+         if(state.contains("RedHealthBarState")){
+             Nowstate="High damage !!";
+             
+            // Create an instance of GameFont with size
+          GameFont smallFont = new GameFont(16);
+	  smallFont.drawString("State : " +Nowstate , x-100, y-27, Color.white );	
+          
+         }        
+          
+	}
+
 }
