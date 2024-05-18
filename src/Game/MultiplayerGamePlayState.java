@@ -146,7 +146,7 @@ public class MultiplayerGamePlayState {
         while (iter.hasNext()) {
 
             Bullet bullet = iter.next();
-            bullet.render(g);
+            bullet.render();
             if (bullet.isOutOfBounds(gc)) {
                 iter.remove();
             }
@@ -160,7 +160,7 @@ public class MultiplayerGamePlayState {
 
                         Bullet bullet = oppIter.next();
                         synchronized (bullet) {
-                            bullet.render(g);
+                            bullet.render();
                             if (bullet.isOutOfBounds(gc)) {
                                 oppIter.remove();
                             }
