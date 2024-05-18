@@ -10,7 +10,7 @@ interface HealthBarState {
     void render(int x, int y, int health, Graphics g, HealthBar healthBar);
 }
 
-
+// this method represent full health or little damage
 class GreenHealthBarState implements HealthBarState {
 
     @Override
@@ -23,7 +23,7 @@ class GreenHealthBarState implements HealthBarState {
     }
 }
 
-
+// this method represent health have decreased because of damage
 class OrangeHealthBarState implements HealthBarState {
 
     @Override
@@ -35,7 +35,7 @@ class OrangeHealthBarState implements HealthBarState {
     }
 }
 
-
+// this method represent represent health with high damage
 class RedHealthBarState implements HealthBarState {
 
     @Override
