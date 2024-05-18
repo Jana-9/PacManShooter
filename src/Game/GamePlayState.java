@@ -128,7 +128,7 @@ public class GamePlayState implements GameState {
         while (iter.hasNext()) {
 
             Bullet bullet = iter.next();
-            bullet.render(g);
+            bullet.render();
             if (bullet.isOutOfBounds(gc)) {
                 iter.remove();
             }
